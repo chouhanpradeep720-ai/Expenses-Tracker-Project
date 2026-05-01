@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: expenses-tracker 
+  #namespace: tracker
+data:
+  MYSQL_DATABASE: expenses_tracker
+  SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/expenses_tracker?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+  SPRING_DATASOURCE_USERNAME: root
+
+  
