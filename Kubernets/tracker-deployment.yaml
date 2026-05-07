@@ -17,7 +17,7 @@ spec:
       - name: docker-secret
       containers:
       - name: expense-tracker-webapp
-        image: pradeepchouhan115/docker.repo:expenses-tracker.${BUILD_NUMBER}
+        image: pradeepchouhan115/docker.repo:expenses-tracker.${IMAGE_TAG}
         ports:
         - containerPort: 8080
         env:
