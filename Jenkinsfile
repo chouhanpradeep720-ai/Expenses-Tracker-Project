@@ -114,5 +114,22 @@ pipeline{
             }
         }   
     }
-}
-        
+
+    post {
+        success {
+            mail bcc: '', 
+            body: "Build #${env.BUILD_NUMBER} of ${env.JOB_NAME} succeeded! Check it out at ${env.BUILD_URL}", 
+            cc: '', from: 'chouhanpradeep720@gmail.com', 
+            replyTo : '', subject: "Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}", 
+            to: 'chouhanpradeep720@gmail.com'
+        }
+        failure {
+            mail bcc: '',
+            body: "Build #${env.BUILD_NUMBER} of ${env.JOB_NAME} failed! Check it out at ${env.BUILD_URL}", 
+            cc: '', from: 'chouhanpradeep720@gmail.com', replyTo : '', 
+            subject: "Build Failure: ${env.JOB_NAME} #${env.BUILD_NUMBER}", 
+            to: 'chouhanpradeep720@gmail.com'
+        }
+
+    }
+}       
