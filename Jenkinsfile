@@ -18,13 +18,28 @@ pipeline{
                 }
             }
         }
-        //stage('Build with Maven') {
-           // steps {
-             //   script {
-               //     sh 'mvn clean package -DskipTests'
-                //}
-            //}
-        //} withSonarQubeEnv( ' SonarQube' )
+
+        stage('OWASP Dependency Check'){
+            steps{
+                dependencyCheck additionalArguments: ' --scan .  --format HTML', nvdCredentialsId: 'nvdi-id', odcInstallation: 'DP'
+            }
+        }
+
+        stage('Scan with Trivy'){
+            steps {
+                script {
+                    sh "trivy fs . > trivy-scan-results.txt || true"
+                } 
+            }       
+                       
+        }
+        // stage('Build with Maven') {
+        //    steps {
+        //        script {
+        //            sh 'mvn clean package -DskipTests'
+        //         }
+        //     }
+        // } 
 
         stage('Build Project and Check Quality with SonarQube') {
             steps {
@@ -37,7 +52,7 @@ pipeline{
         }
 
 
-        stage("Quality Gate") {
+        stage('Check Sonar Quality Gate') {
             steps {
                 script {
                      timeout(time: 1, unit: 'HOURS') {
@@ -50,14 +65,38 @@ pipeline{
             }
         }
 
-        stage ('Build Images and Push to Docker Hub'){
+        stage ('Build Docker Image'){
             steps {
                 script {
                     sh "docker build -t ${DOCKER_IMAGE} . "
-                    sh 'docker login -u ${DOCKERHUB_CREDENTIALS_USR} -p ${DOCKERHUB_CREDENTIALS_PSW} '
-                    sh "docker push ${DOCKER_IMAGE} "
+                }        
+            }
+        }
+
+        stage('Scan Docker Image with Trivy'){
+            steps {
+                script {
+                sh """
+                    trivy image \
+                    --scanners vuln \
+                    --severity HIGH,CRITICAL \
+                    --ignore-unfixed \
+                    --no-progress \
+                    --format table \
+                    -o trivy-report.txt \
+                    ${DOCKER_IMAGE}
+                    """
                 }
-            }        
+            }       
+        }
+
+        stage('Push Image to Docker Repo'){
+            steps{
+                script{
+                    sh 'docker login -u ${DOCKERHUB_CREDENTIALS_USR} -p ${DOCKERHUB_CREDENTIALS_PSW}'
+                    sh "docker push ${DOCKER_IMAGE}"
+                }
+            }
         }
         stage('Clean Docker Images'){
             steps {
